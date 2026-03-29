@@ -1,0 +1,19 @@
+# Maven
+backend/target/
+backend/.mvn/
+*.class
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.DS_Store
+
+# Env / secrets
+application-local.properties
+*.env
+
+# Logs
+*.log

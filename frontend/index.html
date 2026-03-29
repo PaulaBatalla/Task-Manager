@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestor de Tareas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <div class="bg-dots"></div>
+
+    <header>
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-icon">✅</span>
+                <span class="logo-text">Mis Tareas</span>
+            </div>
+            <div class="header-meta">
+                <span class="api-status" id="apiStatus">● conectando...</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Barra de filtros y estadísticas -->
+        <section class="topbar">
+            <div class="stats" id="statsBar">
+                <span class="stat-chip active" data-filter="all">todas <em id="countAll">0</em></span>
+                <span class="stat-chip" data-filter="PENDING">pendientes <em id="countPending">0</em></span>
+                <span class="stat-chip" data-filter="IN_PROGRESS">en progreso <em id="countInProgress">0</em></span>
+                <span class="stat-chip" data-filter="DONE">completadas <em id="countDone">0</em></span>
+            </div>
+            <div class="filters">
+                <select id="filterPriority" class="filter-select">
+                    <option value="">todas las prioridades</option>
+                    <option value="HIGH">🔴 alta</option>
+                    <option value="MEDIUM">🟡 media</option>
+                    <option value="LOW">🟢 baja</option>
+                </select>
+                <button class="btn-new" id="btnOpenModal">+ nueva tarea</button>
+            </div>
+        </section>
+
+        <!-- Lista de tareas -->
+        <section class="task-grid" id="taskGrid">
+            <div class="empty-state" id="emptyState">
+                <p class="empty-icon">🌸</p>
+                <p>No hay tareas todavía. ¡Creá una!</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal crear/editar -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nueva tarea</h2>
+                <button class="modal-close" id="btnCloseModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="taskId" />
+
+                <div class="field">
+                    <label for="taskTitle">Título <span class="required">*</span></label>
+                    <input type="text" id="taskTitle" placeholder="¿Qué hay que hacer?" maxlength="255" />
+                </div>
+
+                <div class="field">
+                    <label for="taskDescription">Descripción</label>
+                    <textarea id="taskDescription" placeholder="Agregá más detalles..." rows="3"></textarea>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label for="taskPriority">Prioridad <span class="required">*</span></label>
+                        <select id="taskPriority">
+                            <option value="LOW">🟢 Baja</option>
+                            <option value="MEDIUM" selected>🟡 Media</option>
+                            <option value="HIGH">🔴 Alta</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="taskStatus">Estado</label>
+                        <select id="taskStatus">
+                            <option value="PENDING">Pendiente</option>
+                            <option value="IN_PROGRESS">En progreso</option>
+                            <option value="DONE">Completada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="taskDueDate">Fecha límite</label>
+                    <input type="date" id="taskDueDate" />
+                </div>
+
+                <div class="error-msg" id="formError"></div>
+
+                <div class="modal-actions">
+                    <button class="btn-cancel" id="btnCancel">Cancelar</button>
+                    <button class="btn-save" id="btnSave">Guardar tarea</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal confirmar eliminación -->
+    <div class="modal-overlay" id="deleteOverlay">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h2>¿Eliminar tarea?</h2>
+                <button class="modal-close" id="btnCloseDelete">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="confirm-text">Esta acción no se puede deshacer.</p>
+                <div class="modal-actions">
+                    <button class="btn-cancel" id="btnCancelDelete">Cancelar</button>
+                    <button class="btn-delete" id="btnConfirmDelete">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
