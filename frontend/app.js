@@ -1,17 +1,15 @@
-// ============================================================
 //  Gestor de Tareas - Frontend (app.js)
 //  Consume la API REST de Spring Boot en /api/tasks
-// ============================================================
 
 const API_URL = "http://localhost:8080/api/tasks";
 
-// ── Estado ───────────────────────────────────────────────────
+// Estado
 let todasLasTareas  = [];
 let filtroEstado    = "all";
 let filtroPrioridad = "";
 let tareaAEliminar  = null;
 
-// ── Referencias al DOM ───────────────────────────────────────
+// Referencias al DOM
 const taskGrid      = document.getElementById("taskGrid");
 const emptyState    = document.getElementById("emptyState");
 const apiStatus     = document.getElementById("apiStatus");
@@ -19,13 +17,13 @@ const modalOverlay  = document.getElementById("modalOverlay");
 const deleteOverlay = document.getElementById("deleteOverlay");
 const formError     = document.getElementById("formError");
 
-// ── Inicio ───────────────────────────────────────────────────
+// Inicio
 document.addEventListener("DOMContentLoaded", () => {
     cargarTareas();
     registrarEventos();
 });
 
-// ── Cargar tareas desde la API ────────────────────────────────
+// Cargar tareas desde la API
 async function cargarTareas() {
     try {
         const respuesta = await fetch(API_URL);
@@ -40,7 +38,7 @@ async function cargarTareas() {
     }
 }
 
-// ── Renderizado ──────────────────────────────────────────────
+// Renderizado
 function renderizarTodo() {
     actualizarEstadisticas();
     renderizarTareas();
@@ -110,7 +108,7 @@ function actualizarEstadisticas() {
     document.getElementById("countDone").textContent       = todasLasTareas.filter(t => t.status === "DONE").length;
 }
 
-// ── Eventos ──────────────────────────────────────────────────
+// Eventos
 function registrarEventos() {
     // Filtro por estado
     document.querySelectorAll(".stat-chip").forEach(chip => {
@@ -146,7 +144,7 @@ function registrarEventos() {
     deleteOverlay.addEventListener("click", e => { if (e.target === deleteOverlay) cerrarModalEliminar(); });
 }
 
-// ── Modal crear / editar ─────────────────────────────────────
+// Modal crear / editar
 function abrirModalNuevo() {
     resetearFormulario();
     document.getElementById("modalTitle").textContent = "Nueva tarea";
@@ -180,7 +178,7 @@ function resetearFormulario() {
     formError.textContent = "";
 }
 
-// ── Guardar (crear o actualizar) ──────────────────────────────
+// Guardar (crear o actualizar)
 async function guardarTarea() {
     const id    = document.getElementById("taskId").value;
     const titulo = document.getElementById("taskTitle").value.trim();
@@ -225,7 +223,7 @@ async function guardarTarea() {
     }
 }
 
-// ── Eliminar ──────────────────────────────────────────────────
+// Eliminar
 function abrirModalEliminar(id) {
     tareaAEliminar = id;
     deleteOverlay.classList.add("open");
@@ -250,7 +248,7 @@ async function confirmarEliminar() {
     }
 }
 
-// ── Utilidades ────────────────────────────────────────────────
+// Utilidades
 function setEstadoAPI(online) {
     apiStatus.textContent = online ? "● conectado" : "● sin conexión";
     apiStatus.className   = `api-status ${online ? "online" : "offline"}`;

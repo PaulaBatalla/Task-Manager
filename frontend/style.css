@@ -1,6 +1,4 @@
-/* ===========================
-   VARIABLES & RESET
-   =========================== */
+/* VARIABLES & RESET */
 :root {
     --bg:         #f7f3ff;
     --surface:    #ffffff;
@@ -39,7 +37,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Fondo con puntitos */
+/* Fondo */
 .bg-dots {
     position: fixed;
     inset: 0;
@@ -50,9 +48,7 @@ body {
     z-index: 0;
 }
 
-/* ===========================
-   HEADER
-   =========================== */
+/* HEADER */
 header {
     position: sticky;
     top: 0;
@@ -93,9 +89,7 @@ header {
 .api-status.online  { color: var(--green); }
 .api-status.offline { color: var(--red); }
 
-/* ===========================
-   MAIN LAYOUT
-   =========================== */
+/* MAIN LAYOUT */
 main {
     position: relative;
     z-index: 1;
@@ -104,9 +98,7 @@ main {
     padding: 32px 24px 80px;
 }
 
-/* ===========================
-   TOPBAR
-   =========================== */
+/* TOPBAR */
 .topbar {
     display: flex;
     align-items: center;
@@ -191,9 +183,7 @@ main {
 .btn-new:hover  { background: var(--accent-dark); box-shadow: var(--shadow-h); }
 .btn-new:active { transform: scale(.97); }
 
-/* ===========================
-   TASK GRID
-   =========================== */
+/* TASK GRID */
 .task-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -322,9 +312,7 @@ main {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ===========================
-   MODAL
-   =========================== */
+/* MODAL */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -497,9 +485,7 @@ textarea { resize: vertical; }
     font-weight: 500;
 }
 
-/* ===========================
-   RESPONSIVE
-   =========================== */
+/* RESPONSIVE */
 @media (max-width: 600px) {
     .topbar { flex-direction: column; align-items: flex-start; }
     .field-row { grid-template-columns: 1fr; }

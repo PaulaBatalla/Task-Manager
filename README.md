@@ -32,8 +32,7 @@ El proyecto sigue el patrón **MVC**:
 - Maven
 - PostgreSQL (o Docker)
 
-## Cómo correrlo
-
+### Cómo correrlo
 1. Tener PostgreSQL corriendo con una base de datos llamada `taskmanager`
 2. Configurar usuario y contraseña en `application.properties`
 3. Correr el backend con `mvn spring-boot:run`
