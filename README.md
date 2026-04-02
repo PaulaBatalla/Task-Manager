@@ -4,10 +4,10 @@ Proyecto fullstack para gestionar tareas personales. Desarrollado como proyecto 
 
 ## Tecnologías usadas
 
-- **Java + Spring Boot** — API REST del backend
-- **PostgreSQL** — base de datos relacional
-- **JPA / Hibernate** — para conectar Java con la base de datos sin escribir SQL manual
-- **HTML + CSS + JavaScript** — frontend sin frameworks, consume la API con fetch()
+- **Java + Spring Boot** - API REST del backend
+- **PostgreSQL** - base de datos relacional
+- **JPA / Hibernate** - para conectar Java con la base de datos sin escribir SQL manual
+- **HTML + CSS + JavaScript** - frontend sin frameworks, consume la API con fetch()
 
 ## ¿Qué hace la aplicación?
 
@@ -20,10 +20,10 @@ Proyecto fullstack para gestionar tareas personales. Desarrollado como proyecto 
 
 El proyecto sigue el patrón **MVC**:
 
-- `model/` — la entidad Tarea con sus atributos
-- `repository/` — acceso a la base de datos usando JPA
-- `service/` — lógica de negocio
-- `controller/` — endpoints REST que reciben y responden las solicitudes HTTP
+- `model/` - la entidad Tarea con sus atributos
+- `repository/` - acceso a la base de datos usando JPA
+- `service/` - lógica de negocio
+- `controller/` - endpoints REST que reciben y responden las solicitudes HTTP
 
 ## Cómo correrlo localmente
 
@@ -52,4 +52,4 @@ El proyecto sigue el patrón **MVC**:
 
 ## Autora
 
-**Paula Batalla** — proyecto de portfolio
+**Paula Batalla** - proyecto de portfolio
