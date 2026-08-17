@@ -26,7 +26,6 @@
     </header>
 
     <main>
-        <!-- Barra de filtros y estadísticas -->
         <section class="topbar">
             <div class="stats" id="statsBar">
                 <span class="stat-chip active" data-filter="all">todas <em id="countAll">0</em></span>
@@ -55,7 +54,6 @@
             </div>
         </section>
 
-        <!-- Lista de tareas -->
         <section class="task-grid" id="taskGrid">
             <div class="empty-state" id="emptyState">
                 <p class="empty-icon">🌸</p>
@@ -64,7 +62,7 @@
         </section>
     </main>
 
-    <!-- Modal crear/editar -->
+    <!-- Modal crear/editar tarea -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
@@ -121,6 +119,25 @@
                 <div class="modal-actions">
                     <button class="btn-cancel" id="btnCancel">Cancelar</button>
                     <button class="btn-save" id="btnSave">Guardar tarea</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal comentarios -->
+    <div class="modal-overlay" id="commentsOverlay">
+        <div class="modal modal-comments">
+            <div class="modal-header">
+                <h2 id="commentModalTitle">Comentarios</h2>
+                <button class="modal-close" id="btnCloseComments">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="comments-list" id="commentsList">
+                    <p class="no-comments">No hay comentarios todavía.</p>
+                </div>
+                <div class="comment-input-area">
+                    <textarea id="newCommentContent" placeholder="Escribí un comentario..." rows="2"></textarea>
+                    <button class="btn-save" id="btnAddComment">Agregar</button>
                 </div>
             </div>
         </div>

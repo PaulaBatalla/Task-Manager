@@ -1,25 +1,27 @@
 //  Gestor de Tareas - Frontend (app.js)
 //  Consume la API REST de Spring Boot en /api/tasks
 
-const API_URL        = "http://localhost:8080/api/tasks";
-const CATEGORY_URL   = "http://localhost:8080/api/categories";
+const API_URL      = "http://localhost:8080/api/tasks";
+const CATEGORY_URL = "http://localhost:8080/api/categories";
 
 // Estado
-let todasLasTareas   = [];
+let todasLasTareas     = [];
 let todasLasCategorias = [];
-let filtroEstado     = "all";
-let filtroPrioridad  = "";
-let filtroCategoria  = "";
-let criterioOrden    = "";
-let tareaAEliminar   = null;
+let filtroEstado       = "all";
+let filtroPrioridad    = "";
+let filtroCategoria    = "";
+let criterioOrden      = "";
+let tareaAEliminar     = null;
+let tareaActivaId      = null;  // ID de la tarea cuyo modal de comentarios está abierto
 
 // Referencias al DOM
-const taskGrid      = document.getElementById("taskGrid");
-const emptyState    = document.getElementById("emptyState");
-const apiStatus     = document.getElementById("apiStatus");
-const modalOverlay  = document.getElementById("modalOverlay");
-const deleteOverlay = document.getElementById("deleteOverlay");
-const formError     = document.getElementById("formError");
+const taskGrid       = document.getElementById("taskGrid");
+const emptyState     = document.getElementById("emptyState");
+const apiStatus      = document.getElementById("apiStatus");
+const modalOverlay   = document.getElementById("modalOverlay");
+const deleteOverlay  = document.getElementById("deleteOverlay");
+const commentsOverlay = document.getElementById("commentsOverlay");
+const formError      = document.getElementById("formError");
 
 // Inicio
 document.addEventListener("DOMContentLoaded", () => {
@@ -28,12 +30,11 @@ document.addEventListener("DOMContentLoaded", () => {
     registrarEventos();
 });
 
-// Cargar categorías desde la API y poblar los selectores
+// ── Categorías ────────────────────────────────────────────────
 async function cargarCategorias() {
     try {
         const respuesta = await fetch(CATEGORY_URL);
         if (!respuesta.ok) throw new Error("Error cargando categorías");
-
         todasLasCategorias = await respuesta.json();
         poblarSelectoresCategorias();
     } catch (error) {
@@ -45,7 +46,6 @@ function poblarSelectoresCategorias() {
     const selectFiltro = document.getElementById("filterCategory");
     const selectModal  = document.getElementById("taskCategory");
 
-    // Limpiar opciones previas (menos la primera)
     selectFiltro.innerHTML = '<option value="">todas las categorías</option>';
     selectModal.innerHTML  = '<option value="">Sin categoría</option>';
 
@@ -55,12 +55,11 @@ function poblarSelectoresCategorias() {
     });
 }
 
-// Cargar tareas desde la API
+// ── Tareas ────────────────────────────────────────────────────
 async function cargarTareas() {
     try {
         const respuesta = await fetch(API_URL);
         if (!respuesta.ok) throw new Error("Error en la API");
-
         todasLasTareas = await respuesta.json();
         setEstadoAPI(true);
         renderizarTodo();
@@ -70,7 +69,6 @@ async function cargarTareas() {
     }
 }
 
-// Renderizado
 function renderizarTodo() {
     actualizarEstadisticas();
     renderizarTareas();
@@ -103,18 +101,11 @@ function ordenarTareas(tareas) {
 function renderizarTareas() {
     let tareas = todasLasTareas;
 
-    if (filtroEstado !== "all") {
-        tareas = tareas.filter(t => t.status === filtroEstado);
-    }
-    if (filtroPrioridad) {
-        tareas = tareas.filter(t => t.priority === filtroPrioridad);
-    }
-    if (filtroCategoria) {
-        tareas = tareas.filter(t => t.category && String(t.category.id) === filtroCategoria);
-    }
+    if (filtroEstado !== "all") tareas = tareas.filter(t => t.status === filtroEstado);
+    if (filtroPrioridad)        tareas = tareas.filter(t => t.priority === filtroPrioridad);
+    if (filtroCategoria)        tareas = tareas.filter(t => t.category && String(t.category.id) === filtroCategoria);
 
     tareas = ordenarTareas(tareas);
-
     taskGrid.querySelectorAll(".task-card").forEach(el => el.remove());
 
     if (tareas.length === 0) {
@@ -143,8 +134,9 @@ function crearTarjeta(tarea) {
         <div class="card-header">
             <span class="task-title">${escaparHtml(tarea.title)}</span>
             <div class="card-actions">
+                <button class="btn-icon comments" title="Comentarios" data-id="${tarea.id}">💬</button>
                 <button class="btn-icon edit" title="Editar" data-id="${tarea.id}">✎</button>
-                <button class="btn-icon del"  title="Eliminar" data-id="${tarea.id}">✕</button>
+                <button class="btn-icon del" title="Eliminar" data-id="${tarea.id}">✕</button>
             </div>
         </div>
         ${tarea.description ? `<p class="task-desc">${escaparHtml(tarea.description)}</p>` : ""}
@@ -157,8 +149,9 @@ function crearTarjeta(tarea) {
         </div>
     `;
 
-    card.querySelector(".edit").addEventListener("click", () => abrirModalEditar(tarea));
-    card.querySelector(".del").addEventListener("click",  () => abrirModalEliminar(tarea.id));
+    card.querySelector(".comments").addEventListener("click", () => abrirModalComentarios(tarea));
+    card.querySelector(".edit").addEventListener("click",     () => abrirModalEditar(tarea));
+    card.querySelector(".del").addEventListener("click",      () => abrirModalEliminar(tarea.id));
 
     return card;
 }
@@ -170,7 +163,86 @@ function actualizarEstadisticas() {
     document.getElementById("countDone").textContent       = todasLasTareas.filter(t => t.status === "DONE").length;
 }
 
-// Eventos
+// ── Comentarios ───────────────────────────────────────────────
+async function abrirModalComentarios(tarea) {
+    tareaActivaId = tarea.id;
+    document.getElementById("commentModalTitle").textContent = `💬 ${tarea.title}`;
+    document.getElementById("newCommentContent").value = "";
+    commentsOverlay.classList.add("open");
+    await cargarComentarios();
+}
+
+async function cargarComentarios() {
+    const lista = document.getElementById("commentsList");
+    lista.innerHTML = '<p class="no-comments">Cargando...</p>';
+
+    try {
+        const respuesta = await fetch(`${API_URL}/${tareaActivaId}/comments`);
+        const comentarios = await respuesta.json();
+
+        if (comentarios.length === 0) {
+            lista.innerHTML = '<p class="no-comments">No hay comentarios todavía.</p>';
+            return;
+        }
+
+        lista.innerHTML = comentarios.map(c => `
+            <div class="comment-item">
+                <p class="comment-content">${escaparHtml(c.content)}</p>
+                <div class="comment-footer">
+                    <span class="comment-date">${formatearFechaHora(c.createdAt)}</span>
+                    <button class="btn-comment-delete" data-id="${c.id}">✕</button>
+                </div>
+            </div>
+        `).join("");
+
+        lista.querySelectorAll(".btn-comment-delete").forEach(btn => {
+            btn.addEventListener("click", () => eliminarComentario(btn.dataset.id));
+        });
+
+    } catch (error) {
+        lista.innerHTML = '<p class="no-comments">Error al cargar comentarios.</p>';
+        console.error(error);
+    }
+}
+
+async function agregarComentario() {
+    const content = document.getElementById("newCommentContent").value.trim();
+    if (!content) return;
+
+    try {
+        const respuesta = await fetch(`${API_URL}/${tareaActivaId}/comments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content })
+        });
+
+        if (!respuesta.ok) throw new Error("Error al agregar comentario");
+
+        document.getElementById("newCommentContent").value = "";
+        await cargarComentarios();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function eliminarComentario(commentId) {
+    try {
+        const respuesta = await fetch(`${API_URL}/${tareaActivaId}/comments/${commentId}`, {
+            method: "DELETE"
+        });
+        if (!respuesta.ok) throw new Error("Error al eliminar comentario");
+        await cargarComentarios();
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function cerrarModalComentarios() {
+    commentsOverlay.classList.remove("open");
+    tareaActivaId = null;
+}
+
+// ── Eventos ───────────────────────────────────────────────────
 function registrarEventos() {
     document.querySelectorAll(".stat-chip").forEach(chip => {
         chip.addEventListener("click", () => {
@@ -181,20 +253,9 @@ function registrarEventos() {
         });
     });
 
-    document.getElementById("filterPriority").addEventListener("change", e => {
-        filtroPrioridad = e.target.value;
-        renderizarTareas();
-    });
-
-    document.getElementById("filterCategory").addEventListener("change", e => {
-        filtroCategoria = e.target.value;
-        renderizarTareas();
-    });
-
-    document.getElementById("sortOrder").addEventListener("change", e => {
-        criterioOrden = e.target.value;
-        renderizarTareas();
-    });
+    document.getElementById("filterPriority").addEventListener("change", e => { filtroPrioridad = e.target.value; renderizarTareas(); });
+    document.getElementById("filterCategory").addEventListener("change", e => { filtroCategoria = e.target.value; renderizarTareas(); });
+    document.getElementById("sortOrder").addEventListener("change",      e => { criterioOrden = e.target.value; renderizarTareas(); });
 
     document.getElementById("btnOpenModal").addEventListener("click", abrirModalNuevo);
     document.getElementById("btnCloseModal").addEventListener("click", cerrarModal);
@@ -202,13 +263,17 @@ function registrarEventos() {
     modalOverlay.addEventListener("click", e => { if (e.target === modalOverlay) cerrarModal(); });
     document.getElementById("btnSave").addEventListener("click", guardarTarea);
 
+    document.getElementById("btnCloseComments").addEventListener("click", cerrarModalComentarios);
+    commentsOverlay.addEventListener("click", e => { if (e.target === commentsOverlay) cerrarModalComentarios(); });
+    document.getElementById("btnAddComment").addEventListener("click", agregarComentario);
+
     document.getElementById("btnCloseDelete").addEventListener("click",  cerrarModalEliminar);
     document.getElementById("btnCancelDelete").addEventListener("click", cerrarModalEliminar);
     document.getElementById("btnConfirmDelete").addEventListener("click", confirmarEliminar);
     deleteOverlay.addEventListener("click", e => { if (e.target === deleteOverlay) cerrarModalEliminar(); });
 }
 
-// Modal crear / editar
+// ── Modal crear/editar ────────────────────────────────────────
 function abrirModalNuevo() {
     resetearFormulario();
     document.getElementById("modalTitle").textContent = "Nueva tarea";
@@ -244,7 +309,7 @@ function resetearFormulario() {
     formError.textContent = "";
 }
 
-// Guardar (crear o actualizar)
+// ── Guardar tarea ─────────────────────────────────────────────
 async function guardarTarea() {
     const id     = document.getElementById("taskId").value;
     const titulo = document.getElementById("taskTitle").value.trim();
@@ -255,6 +320,7 @@ async function guardarTarea() {
     }
 
     const categoryId = document.getElementById("taskCategory").value;
+    const params     = categoryId ? `?categoryId=${categoryId}` : "";
 
     const datos = {
         title:       titulo,
@@ -263,9 +329,6 @@ async function guardarTarea() {
         status:      document.getElementById("taskStatus").value,
         dueDate:     document.getElementById("taskDueDate").value || null,
     };
-
-    // El categoryId se manda como parámetro en la URL
-    const params = categoryId ? `?categoryId=${categoryId}` : "";
 
     const btnSave = document.getElementById("btnSave");
     btnSave.disabled = true;
@@ -294,7 +357,7 @@ async function guardarTarea() {
     }
 }
 
-// Eliminar
+// ── Eliminar tarea ────────────────────────────────────────────
 function abrirModalEliminar(id) {
     tareaAEliminar = id;
     deleteOverlay.classList.add("open");
@@ -317,7 +380,7 @@ async function confirmarEliminar() {
     }
 }
 
-// Utilidades
+// ── Utilidades ────────────────────────────────────────────────
 function setEstadoAPI(online) {
     apiStatus.textContent = online ? "● conectado" : "● sin conexión";
     apiStatus.className   = `api-status ${online ? "online" : "offline"}`;
@@ -331,6 +394,11 @@ function esVencida(fechaStr) {
 function formatearFecha(fechaStr) {
     const [y, m, d] = fechaStr.split("-");
     return `${d}/${m}/${y}`;
+}
+
+function formatearFechaHora(fechaStr) {
+    const fecha = new Date(fechaStr);
+    return fecha.toLocaleDateString("es-AR") + " " + fecha.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
 }
 
 function escaparHtml(str) {
