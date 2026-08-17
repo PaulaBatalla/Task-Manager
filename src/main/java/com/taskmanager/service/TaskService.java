@@ -2,8 +2,10 @@ package com.taskmanager.service;
 
 import com.taskmanager.model.Category;
 import com.taskmanager.model.Task;
+import com.taskmanager.model.User;
 import com.taskmanager.repository.CategoryRepository;
 import com.taskmanager.repository.TaskRepository;
+import com.taskmanager.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,34 +16,40 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final CategoryRepository categoryRepository;
+    private final UserRepository userRepository;
 
-    public TaskService(TaskRepository taskRepository, CategoryRepository categoryRepository) {
+    public TaskService(TaskRepository taskRepository,
+                       CategoryRepository categoryRepository,
+                       UserRepository userRepository) {
         this.taskRepository = taskRepository;
         this.categoryRepository = categoryRepository;
+        this.userRepository = userRepository;
     }
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    // Devuelve solo las tareas del usuario autenticado
+    public List<Task> getAllTasks(String email) {
+        return taskRepository.findByUserEmail(email);
     }
 
     public Optional<Task> getTaskById(Long id) {
         return taskRepository.findById(id);
     }
 
-    public List<Task> getTasksByStatus(Task.Status status) {
-        return taskRepository.findByStatus(status);
+    public List<Task> getTasksByStatus(Task.Status status, String email) {
+        return taskRepository.findByStatusAndUserEmail(status, email);
     }
 
-    public List<Task> getTasksByPriority(Task.Priority priority) {
-        return taskRepository.findByPriority(priority);
+    public List<Task> getTasksByPriority(Task.Priority priority, String email) {
+        return taskRepository.findByPriorityAndUserEmail(priority, email);
     }
 
-    public List<Task> getTasksByStatusAndPriority(Task.Status status, Task.Priority priority) {
-        return taskRepository.findByStatusAndPriority(status, priority);
+    public List<Task> getTasksByStatusAndPriority(Task.Status status, Task.Priority priority, String email) {
+        return taskRepository.findByStatusAndPriorityAndUserEmail(status, priority, email);
     }
 
-    public Task createTask(Task task, Long categoryId) {
+    public Task createTask(Task task, Long categoryId, String email) {
         asignarCategoria(task, categoryId);
+        asignarUsuario(task, email);
         return taskRepository.save(task);
     }
 
@@ -65,14 +73,15 @@ public class TaskService {
         return false;
     }
 
-    // Busca la categoría por ID y la asigna a la tarea
-    // Si no se manda categoryId (null), la tarea queda sin categoría
     private void asignarCategoria(Task task, Long categoryId) {
         if (categoryId != null) {
-            Optional<Category> category = categoryRepository.findById(categoryId);
-            category.ifPresent(task::setCategory);
+            categoryRepository.findById(categoryId).ifPresent(task::setCategory);
         } else {
             task.setCategory(null);
         }
+    }
+
+    private void asignarUsuario(Task task, String email) {
+        userRepository.findByEmail(email).ifPresent(task::setUser);
     }
 }

@@ -9,9 +9,9 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    List<Task> findByStatus(Task.Status status);
-
-    List<Task> findByPriority(Task.Priority priority);
-
-    List<Task> findByStatusAndPriority(Task.Status status, Task.Priority priority);
+    // Filtra por usuario
+    List<Task> findByUserEmail(String email);
+    List<Task> findByStatusAndUserEmail(Task.Status status, String email);
+    List<Task> findByPriorityAndUserEmail(Task.Priority priority, String email);
+    List<Task> findByStatusAndPriorityAndUserEmail(Task.Status status, Task.Priority priority, String email);
 }

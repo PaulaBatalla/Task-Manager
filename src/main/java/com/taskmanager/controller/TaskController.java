@@ -5,6 +5,8 @@ import com.taskmanager.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,25 +22,24 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    // GET /api/tasks
-    // GET /api/tasks?status=PENDING
-    // GET /api/tasks?priority=HIGH
-    // GET /api/tasks?status=PENDING&priority=HIGH
+    // GET /api/tasks — devuelve solo las tareas del usuario autenticado
     @GetMapping
     public ResponseEntity<List<Task>> getTasks(
             @RequestParam(required = false) Task.Status status,
-            @RequestParam(required = false) Task.Priority priority) {
+            @RequestParam(required = false) Task.Priority priority,
+            @AuthenticationPrincipal UserDetails userDetails) {
 
+        String email = userDetails.getUsername();
         List<Task> tasks;
 
         if (status != null && priority != null) {
-            tasks = taskService.getTasksByStatusAndPriority(status, priority);
+            tasks = taskService.getTasksByStatusAndPriority(status, priority, email);
         } else if (status != null) {
-            tasks = taskService.getTasksByStatus(status);
+            tasks = taskService.getTasksByStatus(status, email);
         } else if (priority != null) {
-            tasks = taskService.getTasksByPriority(priority);
+            tasks = taskService.getTasksByPriority(priority, email);
         } else {
-            tasks = taskService.getAllTasks();
+            tasks = taskService.getAllTasks(email);
         }
 
         return ResponseEntity.ok(tasks);
@@ -53,12 +54,12 @@ public class TaskController {
     }
 
     // POST /api/tasks
-    // El frontend manda categoryId como parámetro separado en el body
     @PostMapping
     public ResponseEntity<Task> createTask(
             @Valid @RequestBody Task task,
-            @RequestParam(required = false) Long categoryId) {
-        Task created = taskService.createTask(task, categoryId);
+            @RequestParam(required = false) Long categoryId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        Task created = taskService.createTask(task, categoryId, userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 

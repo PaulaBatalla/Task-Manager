@@ -4,6 +4,18 @@
 const API_URL      = "http://localhost:8080/api/tasks";
 const CATEGORY_URL = "http://localhost:8080/api/categories";
 
+// Si no hay token, redirigir al login
+const token = localStorage.getItem("token");
+if (!token) window.location.href = "login.html";
+
+// Headers con token para todas las requests
+function authHeaders() {
+    return {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+    };
+}
+
 // Estado
 let todasLasTareas     = [];
 let todasLasCategorias = [];
@@ -12,16 +24,16 @@ let filtroPrioridad    = "";
 let filtroCategoria    = "";
 let criterioOrden      = "";
 let tareaAEliminar     = null;
-let tareaActivaId      = null;  // ID de la tarea cuyo modal de comentarios está abierto
+let tareaActivaId      = null;
 
 // Referencias al DOM
-const taskGrid       = document.getElementById("taskGrid");
-const emptyState     = document.getElementById("emptyState");
-const apiStatus      = document.getElementById("apiStatus");
-const modalOverlay   = document.getElementById("modalOverlay");
-const deleteOverlay  = document.getElementById("deleteOverlay");
+const taskGrid        = document.getElementById("taskGrid");
+const emptyState      = document.getElementById("emptyState");
+const apiStatus       = document.getElementById("apiStatus");
+const modalOverlay    = document.getElementById("modalOverlay");
+const deleteOverlay   = document.getElementById("deleteOverlay");
 const commentsOverlay = document.getElementById("commentsOverlay");
-const formError      = document.getElementById("formError");
+const formError       = document.getElementById("formError");
 
 // Inicio
 document.addEventListener("DOMContentLoaded", () => {
@@ -33,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ── Categorías ────────────────────────────────────────────────
 async function cargarCategorias() {
     try {
-        const respuesta = await fetch(CATEGORY_URL);
+        const respuesta = await fetch(CATEGORY_URL, { headers: authHeaders() });
         if (!respuesta.ok) throw new Error("Error cargando categorías");
         todasLasCategorias = await respuesta.json();
         poblarSelectoresCategorias();
@@ -58,7 +70,12 @@ function poblarSelectoresCategorias() {
 // ── Tareas ────────────────────────────────────────────────────
 async function cargarTareas() {
     try {
-        const respuesta = await fetch(API_URL);
+        const respuesta = await fetch(API_URL, { headers: authHeaders() });
+        if (respuesta.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "login.html";
+            return;
+        }
         if (!respuesta.ok) throw new Error("Error en la API");
         todasLasTareas = await respuesta.json();
         setEstadoAPI(true);
@@ -177,7 +194,7 @@ async function cargarComentarios() {
     lista.innerHTML = '<p class="no-comments">Cargando...</p>';
 
     try {
-        const respuesta = await fetch(`${API_URL}/${tareaActivaId}/comments`);
+        const respuesta = await fetch(`${API_URL}/${tareaActivaId}/comments`, { headers: authHeaders() });
         const comentarios = await respuesta.json();
 
         if (comentarios.length === 0) {
@@ -212,12 +229,11 @@ async function agregarComentario() {
     try {
         const respuesta = await fetch(`${API_URL}/${tareaActivaId}/comments`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: authHeaders(),
             body: JSON.stringify({ content })
         });
 
         if (!respuesta.ok) throw new Error("Error al agregar comentario");
-
         document.getElementById("newCommentContent").value = "";
         await cargarComentarios();
     } catch (error) {
@@ -228,7 +244,8 @@ async function agregarComentario() {
 async function eliminarComentario(commentId) {
     try {
         const respuesta = await fetch(`${API_URL}/${tareaActivaId}/comments/${commentId}`, {
-            method: "DELETE"
+            method: "DELETE",
+            headers: authHeaders()
         });
         if (!respuesta.ok) throw new Error("Error al eliminar comentario");
         await cargarComentarios();
@@ -271,6 +288,12 @@ function registrarEventos() {
     document.getElementById("btnCancelDelete").addEventListener("click", cerrarModalEliminar);
     document.getElementById("btnConfirmDelete").addEventListener("click", confirmarEliminar);
     deleteOverlay.addEventListener("click", e => { if (e.target === deleteOverlay) cerrarModalEliminar(); });
+
+    // Botón cerrar sesión
+    document.getElementById("btnLogout").addEventListener("click", () => {
+        localStorage.removeItem("token");
+        window.location.href = "login.html";
+    });
 }
 
 // ── Modal crear/editar ────────────────────────────────────────
@@ -340,12 +363,11 @@ async function guardarTarea() {
 
         const respuesta = await fetch(url, {
             method: metodo,
-            headers: { "Content-Type": "application/json" },
+            headers: authHeaders(),
             body: JSON.stringify(datos),
         });
 
         if (!respuesta.ok) throw new Error("Error al guardar");
-
         cerrarModal();
         await cargarTareas();
     } catch (error) {
@@ -371,7 +393,10 @@ function cerrarModalEliminar() {
 async function confirmarEliminar() {
     if (!tareaAEliminar) return;
     try {
-        const respuesta = await fetch(`${API_URL}/${tareaAEliminar}`, { method: "DELETE" });
+        const respuesta = await fetch(`${API_URL}/${tareaAEliminar}`, {
+            method: "DELETE",
+            headers: authHeaders()
+        });
         if (!respuesta.ok) throw new Error("Error al eliminar");
         cerrarModalEliminar();
         await cargarTareas();

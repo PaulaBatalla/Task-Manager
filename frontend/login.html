@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestor de Tareas — Iniciar sesión</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow-h);
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .auth-logo .logo-icon { font-size: 36px; display: block; margin-bottom: 8px; }
+        .auth-logo .logo-text {
+            font-family: var(--display);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 9px;
+            text-align: center;
+            font-family: var(--sans);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--muted);
+            transition: all .2s;
+        }
+
+        .auth-tab.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .auth-error {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--red);
+            min-height: 18px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-dots"></div>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <span class="logo-icon">✅</span>
+                <span class="logo-text">Mis Tareas</span>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tabLogin">Iniciar sesión</button>
+                <button class="auth-tab" id="tabRegister">Registrarse</button>
+            </div>
+
+            <div class="modal-body" style="padding: 0;">
+                <div class="field">
+                    <label for="authEmail">Email <span class="required">*</span></label>
+                    <input type="email" id="authEmail" placeholder="tu@email.com" />
+                </div>
+
+                <div class="field" style="margin-top: 14px;">
+                    <label for="authPassword">Contraseña <span class="required">*</span></label>
+                    <input type="password" id="authPassword" placeholder="••••••••" />
+                </div>
+
+                <div class="auth-error" id="authError" style="margin-top: 12px;"></div>
+
+                <button class="btn-save" id="btnAuth" style="width: 100%; margin-top: 4px; padding: 12px;">
+                    Iniciar sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const AUTH_URL = "http://localhost:8080/api/auth";
+        let modo = "login"; // "login" o "register"
+
+        document.getElementById("tabLogin").addEventListener("click", () => {
+            modo = "login";
+            document.getElementById("tabLogin").classList.add("active");
+            document.getElementById("tabRegister").classList.remove("active");
+            document.getElementById("btnAuth").textContent = "Iniciar sesión";
+            document.getElementById("authError").textContent = "";
+        });
+
+        document.getElementById("tabRegister").addEventListener("click", () => {
+            modo = "register";
+            document.getElementById("tabRegister").classList.add("active");
+            document.getElementById("tabLogin").classList.remove("active");
+            document.getElementById("btnAuth").textContent = "Crear cuenta";
+            document.getElementById("authError").textContent = "";
+        });
+
+        document.getElementById("btnAuth").addEventListener("click", async () => {
+            const email    = document.getElementById("authEmail").value.trim();
+            const password = document.getElementById("authPassword").value.trim();
+            const errorEl  = document.getElementById("authError");
+            const btn      = document.getElementById("btnAuth");
+
+            if (!email || !password) {
+                errorEl.textContent = "Completá todos los campos.";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = "Cargando...";
+            errorEl.textContent = "";
+
+            try {
+                const url = modo === "login"
+                    ? `${AUTH_URL}/login`
+                    : `${AUTH_URL}/register`;
+
+                const respuesta = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await respuesta.json();
+
+                if (!respuesta.ok) {
+                    errorEl.textContent = data.error || "Ocurrió un error.";
+                    return;
+                }
+
+                // Guarda el token y redirige al index
+                localStorage.setItem("token", data.token);
+                window.location.href = "index.html";
+
+            } catch (error) {
+                errorEl.textContent = "No se pudo conectar con el servidor.";
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = modo === "login" ? "Iniciar sesión" : "Crear cuenta";
+            }
+        });
+
+        // Si ya hay token, redirigir directo al index
+        if (localStorage.getItem("token")) {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

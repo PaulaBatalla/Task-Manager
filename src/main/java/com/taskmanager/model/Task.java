@@ -31,20 +31,18 @@ public class Task {
 
     private LocalDate dueDate;
 
-    // Relación con Category: muchas tareas pueden tener una categoría
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
-    public enum Priority {
-        LOW, MEDIUM, HIGH
-    }
+    // Relación con User: cada tarea pertenece a un usuario
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    public enum Status {
-        PENDING, IN_PROGRESS, DONE
-    }
+    public enum Priority { LOW, MEDIUM, HIGH }
+    public enum Status   { PENDING, IN_PROGRESS, DONE }
 
-    // Constructors
     public Task() {}
 
     public Task(String title, String description, Priority priority, LocalDate dueDate) {
@@ -54,7 +52,6 @@ public class Task {
         this.dueDate = dueDate;
     }
 
-    // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -75,4 +72,7 @@ public class Task {
 
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 }
