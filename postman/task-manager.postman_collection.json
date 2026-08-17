@@ -1,0 +1,523 @@
+{
+	"info": {
+		"_postman_id": "82e82199-cc2b-4335-a29d-1f7a0b7ee482",
+		"name": "Task Manager API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "57496290",
+		"_collection_link": "https://paubatalla-7541653.postman.co/workspace/paubatalla's-Workspace~21e6be0b-be1d-4f4e-8108-f39e26988fa3/collection/57496290-82e82199-cc2b-4335-a29d-1f7a0b7ee482?action=share&source=collection_link&creator=57496290"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verifica que el login fue exitoso\r",
+							"pm.test(\"Login exitoso - código 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"// Verifica que la respuesta tiene un token\r",
+							"pm.test(\"La respuesta contiene un token\", function () {\r",
+							"    const data = pm.response.json();\r",
+							"    pm.expect(data).to.have.property(\"token\");\r",
+							"});\r",
+							"\r",
+							"// Guarda el token automáticamente en la variable de entorno\r",
+							"const data = pm.response.json();\r",
+							"if (data.token) {\r",
+							"    pm.environment.set(\"token\", data.token);\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"miemail@hotmail.com\",\r\n    \"password\": \"abc123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/auth/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Registro",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Verifica que el registro fue exitoso\r",
+							"pm.test(\"Registro exitoso - código 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"// Verifica que devuelve un token\r",
+							"pm.test(\"La respuesta contiene un token\", function () {\r",
+							"    const data = pm.response.json();\r",
+							"    pm.expect(data).to.have.property(\"token\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"nuevo@email.com\",\r\n    \"password\": \"123456\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/auth/register",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener tareas",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Obtener tareas exitoso - código 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"La respuesta es un array\", function () {\r",
+							"    const data = pm.response.json();\r",
+							"    pm.expect(data).to.be.an(\"array\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/tasks",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"tasks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crear tarea",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Tarea creada exitosamente - código 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"La tarea tiene los campos correctos\", function () {\r",
+							"    const data = pm.response.json();\r",
+							"    pm.expect(data).to.have.property(\"id\");\r",
+							"    pm.expect(data).to.have.property(\"title\");\r",
+							"    pm.expect(data.title).to.equal(\"Tarea de prueba\");\r",
+							"    pm.expect(data.priority).to.equal(\"HIGH\");\r",
+							"    pm.expect(data.status).to.equal(\"PENDING\");\r",
+							"});\r",
+							"\r",
+							"// Guarda el id de la tarea para usarlo en los próximos requests\r",
+							"const data = pm.response.json();\r",
+							"if (data.id) {\r",
+							"    pm.environment.set(\"taskId\", data.id);\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Tarea de prueba\",\r\n    \"description\": \"Creada desde Postman\",\r\n    \"priority\": \"HIGH\",\r\n    \"status\": \"PENDING\",\r\n    \"dueDate\": \"2026-12-31\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/tasks",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"tasks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Actualizar tarea",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Tarea actualizada - código 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"El título se actualizó correctamente\", function () {\r",
+							"    const data = pm.response.json();\r",
+							"    pm.expect(data.title).to.equal(\"Tarea de prueba editada\");\r",
+							"    pm.expect(data.status).to.equal(\"IN_PROGRESS\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"title\": \"Tarea de prueba editada\",\r\n    \"description\": \"Actualizada desde Postman\",\r\n    \"priority\": \"MEDIUM\",\r\n    \"status\": \"IN_PROGRESS\",\r\n    \"dueDate\": \"2026-12-31\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/tasks/{{taskId}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"tasks",
+						"{{taskId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener tarea por ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Tarea encontrada - código 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"La tarea tiene el ID correcto\", function () {\r",
+							"    const data = pm.response.json();\r",
+							"    pm.expect(data.id).to.equal(pm.environment.get(\"taskId\"));\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/tasks/{{taskId}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"tasks",
+						"{{taskId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar tarea",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Tarea eliminada - código 204\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/tasks/{{taskId}}",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"tasks",
+						"{{taskId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crear tarea sin título (error esperado)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Validación falla al crear tarea sin título - código 400 o 403\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([400, 403]);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"description\": \"Sin título\",\r\n    \"priority\": \"HIGH\",\r\n    \"status\": \"PENDING\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/tasks",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"tasks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener tarea inexistente (error esperado)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Tarea no encontrada - código 404\", function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/tasks/99999",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"tasks",
+						"99999"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login con contraseña incorrecta (error esperado)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Login fallido - código 401 Unauthorized\", function () {\r",
+							"    pm.response.to.have.status(401);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"miemail@hotmail.com\",\r\n    \"password\": \"contraseñaincorrecta\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/auth/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
