@@ -31,6 +31,11 @@ public class Task {
 
     private LocalDate dueDate;
 
+    // Relación con Category: muchas tareas pueden tener una categoría
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     public enum Priority {
         LOW, MEDIUM, HIGH
     }
@@ -67,4 +72,7 @@ public class Task {
 
     public LocalDate getDueDate() { return dueDate; }
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
 }

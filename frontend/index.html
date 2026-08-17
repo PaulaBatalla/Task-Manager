@@ -41,6 +41,16 @@
                     <option value="MEDIUM">🟡 media</option>
                     <option value="LOW">🟢 baja</option>
                 </select>
+                <select id="filterCategory" class="filter-select">
+                    <option value="">todas las categorías</option>
+                </select>
+                <select id="sortOrder" class="filter-select">
+                    <option value="">ordenar por...</option>
+                    <option value="priority">prioridad (alta primero)</option>
+                    <option value="dueDate">fecha límite (más próxima)</option>
+                    <option value="status">estado</option>
+                    <option value="recent">más reciente primero</option>
+                </select>
                 <button class="btn-new" id="btnOpenModal">+ nueva tarea</button>
             </div>
         </section>
@@ -93,9 +103,17 @@
                     </div>
                 </div>
 
-                <div class="field">
-                    <label for="taskDueDate">Fecha límite</label>
-                    <input type="date" id="taskDueDate" />
+                <div class="field-row">
+                    <div class="field">
+                        <label for="taskCategory">Categoría</label>
+                        <select id="taskCategory">
+                            <option value="">Sin categoría</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="taskDueDate">Fecha límite</label>
+                        <input type="date" id="taskDueDate" />
+                    </div>
                 </div>
 
                 <div class="error-msg" id="formError"></div>

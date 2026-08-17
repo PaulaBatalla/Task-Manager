@@ -53,16 +53,22 @@ public class TaskController {
     }
 
     // POST /api/tasks
+    // El frontend manda categoryId como parámetro separado en el body
     @PostMapping
-    public ResponseEntity<Task> createTask(@Valid @RequestBody Task task) {
-        Task created = taskService.createTask(task);
+    public ResponseEntity<Task> createTask(
+            @Valid @RequestBody Task task,
+            @RequestParam(required = false) Long categoryId) {
+        Task created = taskService.createTask(task, categoryId);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     // PUT /api/tasks/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @Valid @RequestBody Task task) {
-        return taskService.updateTask(id, task)
+    public ResponseEntity<Task> updateTask(
+            @PathVariable Long id,
+            @Valid @RequestBody Task task,
+            @RequestParam(required = false) Long categoryId) {
+        return taskService.updateTask(id, task, categoryId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
